@@ -25,9 +25,13 @@ enum BoosterMessage {
 
 impl Booster {
 	fn new(receiver: mpsc::Receiver<BoosterMessage>) -> Self {
-        // TODO
-        todo!()
+        Booster {
+            receiver: receiver,
+            underlings: Vec::new(),
+            underling_grades: Vec::new(),
+        }
     }
+
 
     async fn handle_message(&mut self, msg: BoosterMessage) {
         println!("[Actor] Booster is running handle_message() with new BoosterMessage: {:?}", msg);
@@ -53,6 +57,7 @@ impl Booster {
     }
 }
 
+
 // ###################################################### //
 // ################### ACTOR FRONTEND ################### //
 // ###################################################### //
@@ -63,7 +68,6 @@ async fn run_booster_actor(mut actor: Booster) {
         println!("\n[run_booster_actor()]: received a new BoosterMessage and calling handle_message()...");
         actor.handle_message(msg).await;
     }
-    todo!()
 }
 
 #[derive(Clone, Debug)]
@@ -73,9 +77,50 @@ pub struct BoosterHandle {
 
 impl BoosterHandle {
     pub async fn new() -> Self {
-        // TODO
-        todo!()
+        let (sender, receiver) = mpsc::channel(8);
+        let actor = Booster::new(receiver);
+        tokio::spawn(run_booster_actor(actor));
+
+        BoosterHandle {
+			sender: sender
+		}
     }
 
-    // TODO
+
+pub async fn submit_student_names(&self, students: Vec<String>) {
+        let msg = BoosterMessage::ProcessStudentDump { students };
+		let _ = self.sender.send(msg).await;
+	}
+
+	pub async fn submit_student_grades(&self, grades: Vec<f64>) {
+        let msg = BoosterMessage::ProcessGradeDump { grades };
+		let _ = self.sender.send(msg).await;
+	}
+
+    pub async fn count_number_of_failing_students(&self) -> usize {
+        let (tx, rx) = oneshot::channel();
+        
+        let msg = BoosterMessage::CountNumberFailingStudents { reply_to: tx };
+        let _ = self.sender.send(msg).await;
+        
+        rx.await.unwrap_or(0)
+    }
+
+    pub async fn get_all_student_names(&self) -> Vec<String> {
+        let (tx, rx) = oneshot::channel();
+
+        let msg = BoosterMessage::GetAllStudentNames { reply_to: tx };
+        let _ = self.sender.send(msg).await;
+
+        rx.await.unwrap_or_default()
+    }
+
+    pub async fn get_all_student_grades(&self) -> Vec<f64> {
+        let (tx, rx) = oneshot::channel();
+
+        let msg = BoosterMessage::GetAllStudentGrades { reply_to: tx };
+        let _ = self.sender.send(msg).await;
+
+        rx.await.unwrap_or_default()
+    }
 }

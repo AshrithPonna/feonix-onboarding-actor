@@ -14,7 +14,7 @@ async fn main() {
     // Step 1: Construct (which also starts up all backends for) All Actors
     let john_handle = JohnHandle::new().await;
     let brightspace_handle = BrightspaceHandle::new().await;
-    // let booster_handle = BoosterHandle::new().await;
+    let booster_handle = BoosterHandle::new().await;
     let admin_handle = AdminHandle::new().await;
 
     // Step 2: Orchestrate Actors

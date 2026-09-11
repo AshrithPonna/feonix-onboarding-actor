@@ -8,6 +8,9 @@ pub mod john;
 
 #[tokio::main]
 async fn main() {
+    println!("hello world!"); // similar to java (take into account ln!)
+    
+
     // Step 1: Construct (which also starts up all backends for) All Actors
     let john_handle = JohnHandle::new().await;
     let brightspace_handle = BrightspaceHandle::new().await;
@@ -20,9 +23,9 @@ async fn main() {
 
     // Step 3: Use Actors
     john_handle.register_new_student("Aarya Patel".to_string()).await;
-    john_handle.assign_grade_to_student("Aarya Patel".to_string(), 58.0).await;
+    john_handle.assign_grade_to_student("Aarya Patel".to_string(), 100.0).await;
     john_handle.register_new_student("Dane Hindsley".to_string()).await;
-    john_handle.assign_grade_to_student("Dane Hindsley".to_string(), 53.0).await;
+    john_handle.assign_grade_to_student("Dane Hindsley".to_string(), 50.0).await;
     john_handle.report_all_students_and_grades_to_brightspace().await;
 
     brightspace_handle.generate_and_append_student_career_id().await;

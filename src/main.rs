@@ -20,19 +20,34 @@ async fn main() {
     // Step 2: Orchestrate Actors
     john_handle.set_brightspace(brightspace_handle.clone()).await;
     brightspace_handle.set_admin(admin_handle.clone()).await;
+    booster_handle.set_brightspace(brightspace_handle.clone()).await;
 
     // Step 3: Use Actors
     john_handle.register_new_student("Aarya Patel".to_string()).await;
-    john_handle.assign_grade_to_student("Aarya Patel".to_string(), 100.0).await;
+    john_handle.assign_grade_to_student("Aarya Patel".to_string(), 0.0).await;
     john_handle.register_new_student("Dane Hindsley".to_string()).await;
-    john_handle.assign_grade_to_student("Dane Hindsley".to_string(), 50.0).await;
+    john_handle.assign_grade_to_student("Dane Hindsley".to_string(), 0.0).await;
     john_handle.report_all_students_and_grades_to_brightspace().await;
 
     brightspace_handle.generate_and_append_student_career_id().await;
     brightspace_handle.report_all_students_and_grades_to_admin().await;
 
     let all_student_names: Vec<String> = admin_handle.get_all_student_names().await;
-    let all_student_grades: Vec<f64>   = admin_handle.get_all_student_grades().await;
+    let all_student_grades: Vec<f64> = admin_handle.get_all_student_grades().await;
+
+    booster_handle.submit_student_names(all_student_names.clone()).await;
+    booster_handle.submit_student_grades(all_student_grades.clone()).await;
+
+    let boosted_name = all_student_names
+        .iter()
+        .find(|name| name.contains("Dane Hindsley"))
+        .cloned()
+        .unwrap_or_else(|| "Dane Hindsley".to_string());
+
+    booster_handle.boost_underling_grade(boosted_name, 75.0).await;
+
+    let all_student_names: Vec<String> = admin_handle.get_all_student_names().await;
+    let all_student_grades: Vec<f64> = admin_handle.get_all_student_grades().await;
     let num_failing_students: usize = admin_handle.count_number_of_failing_students().await;
 
     // Step 4: Print Results
@@ -40,4 +55,3 @@ async fn main() {
     println!("grades of students: {:?}", all_student_grades);
     println!("number of students failed: {}", num_failing_students);
 }
-
